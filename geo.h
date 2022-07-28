@@ -1,0 +1,8 @@
+//
+// Created by Pasha on 27.07.2022.
+//
+
+#ifndef CPP_TRANSPORT_CATALOGUE_GEO_H
+#define CPP_TRANSPORT_CATALOGUE_GEO_H
+
+#endif //CPP_TRANSPORT_CATALOGUE_GEO_H
