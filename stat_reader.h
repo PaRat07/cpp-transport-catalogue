@@ -1,8 +1,14 @@
-//
-// Created by Pasha on 27.07.2022.
-//
+#pragma once
+#include <string>
+#include <iostream>
+#include <vector>
+#include <cassert>
 
-#ifndef CPP_TRANSPORT_CATALOGUE_STAT_READER_H
-#define CPP_TRANSPORT_CATALOGUE_STAT_READER_H
+#include "transport_catalogue.h"
 
-#endif //CPP_TRANSPORT_CATALOGUE_STAT_READER_H
+struct Query {
+    std::string bus_name;
+};
+
+
+std::istream& operator>>(std::istream& in, Query& q);

@@ -3,6 +3,8 @@
 
 #include "transport_catalogue.h"
 #include "input_reader.h"
+#include "stat_reader.h"
+#include "log_duration.h"
 
 using namespace std;
 
@@ -10,22 +12,47 @@ int main() {
     TransportCatalogue cat;
     int query_count;
     cin >> query_count;
-    for (int i = 0; i < query_count; ++i) {
-        AddData d;
-        cin >> d;
-        if (d.type == AddDataType::ADD_WAY) {
-            cat.AddBus(d.data);
-        }
-        else {
-            cat.AddStop(d.data);
+    string useless_str;
+    getline(cin, useless_str);
+    vector<AddData> bus_add;
+    {
+        LOG_DURATION("Add stops");
+        for (int i = 0; i < query_count; ++i) {
+            AddData d;
+            cin >> d;
+            if (d.type == AddDataType::ADD_WAY) {
+                bus_add.push_back(d);
+            } else {
+                double lat, lng;
+                string stop_name;
+                tie(stop_name, lat, lng) = d.data_stop;
+                cat.AddStop(stop_name, lat, lng);
+            }
         }
     }
+    {
+        LOG_DURATION("Add bus");
+        for (const auto &i: bus_add) {
+            cat.AddBus(i.data_bus.second, i.data_bus.first);
+        }
+    }
+    LOG_DURATION("Queries");
     cin >> query_count;
+    getline(cin, useless_str);
     for (int i = 0; i < query_count; ++i) {
         Query q;
         cin >> q;
-        if (q.type == QueryType::SEARCH_STOP_BY_NAME) {
-
+        const auto ans = cat.GetDataForBus(q.bus_name);
+        string_view bus_name;
+        bool succesful;
+        size_t stops_amount, unique_stops_amount;
+        double route_length;
+        tie(succesful, bus_name, stops_amount, unique_stops_amount, route_length) = ans;
+        if (succesful) {
+//            cout << "Bus " << bus_name <<": " << stops_amount << " stops on route, " << unique_stops_amount << " unique stops, " << route_length << " route length" << "\n";
+        }
+        else {
+//            cout << "Bus " << bus_name << ": not found" << "\n";
         }
     }
 }

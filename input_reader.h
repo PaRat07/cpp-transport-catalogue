@@ -2,6 +2,8 @@
 
 #include <string>
 #include <iostream>
+#include <vector>
+#include <tuple>
 
 using std::literals::string_literals::operator""s;
 
@@ -12,20 +14,10 @@ enum class AddDataType {
 
 struct AddData {
     AddDataType type;
-    std::string data;
+    std::pair<std::vector<std::string>, std::string> data_bus;
+    std::tuple<std::string, double, double> data_stop;
 };
 
-enum class QueryType {
-    SEARCH_WAY_BY_NAME,
-    SEARCH_STOP_BY_NAME,
-    GET_WAY_INFO
-};
-
-struct Query {
-    QueryType type;
-    std::string data;
-};
+void SplitData(AddData& data, std::string_view query);
 
 std::istream& operator>>(std::istream& in, AddData& q);
-
-std::istream& operator>>(std::istream& in, Query& q);
