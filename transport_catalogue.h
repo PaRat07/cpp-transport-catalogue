@@ -75,14 +75,16 @@ struct BusHasher {
 
 class TransportCatalogue {
 public:
-    const auto SearchBusByName(std::string_view name) const;
-    const auto SearchStopByName(std::string_view name) const;
     void AddBus(std::string_view bus_name, const std::vector<std::string> &stops);
     void AddStop(std::string_view stop_name, double lat, double lng);
-    std::tuple<bool, std::string, size_t, size_t, double> GetDataForBus(std::string_view bus) const;
+    std::tuple<std::string, size_t, size_t, double> GetDataForBus(std::string_view bus) const;
 private:
+    const Bus* SearchBusByName(std::string_view name) const;
+    const Stop* SearchStopByName(std::string_view name) const;
     std::deque<Stop> stops_;
     std::deque<Bus> buses_;
+    std::unordered_map<std::string_view, const Stop*, std::hash<std::string_view>> stops_to_name_;
+    std::unordered_map<std::string_view , const Bus*, std::hash<std::string_view>> bus_to_name;
     std::unordered_map<Stop, std::unordered_set<const Bus*, BusHasher>, StopHasher> unique_buses_for_stop_;
     std::unordered_map<Bus, std::unordered_set<const Stop*>, BusHasher> unique_stops_for_bus_;
 };

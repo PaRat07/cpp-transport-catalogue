@@ -27,26 +27,23 @@ Bus::Bus(string_view n, std::vector<const Stop *> s)
 {
 }
 
-const auto TransportCatalogue::SearchBusByName(std::string_view name) const {
-    return find_if(buses_.begin(), buses_.end(), [name] (const Bus &bus) {
-        return bus.name == name;
-    });
+const Bus* TransportCatalogue::SearchBusByName(std::string_view name) const {
+    return bus_to_name.count(name) ? bus_to_name.at(name) : nullptr;
 }
 
-const auto TransportCatalogue::SearchStopByName(std::string_view name) const {
-    return find_if(stops_.begin(), stops_.end(), [name] (const Stop & stop) {
-        return stop.name == name;
-    });
+const Stop* TransportCatalogue::SearchStopByName(std::string_view name) const {
+    return stops_to_name_.at(name);
 }
 
 void TransportCatalogue::AddBus(std::string_view bus_name, const std::vector<std::string> &stops) {
     Bus bus;
     bus.name = bus_name;
-    for (string_view name : stops) {
+    for (const string &name : stops) {
         const auto stop = SearchStopByName(name);
         bus.stops.push_back(&*stop);
     }
     const Bus* bus_ptr = &buses_.emplace_back(std::move(bus));
+    bus_to_name[bus_ptr->name] = bus_ptr;
     for (const Stop* const stop : bus_ptr->stops) {
         unique_buses_for_stop_[*stop].insert(bus_ptr);
         unique_stops_for_bus_[*bus_ptr].insert(stop);
@@ -54,18 +51,20 @@ void TransportCatalogue::AddBus(std::string_view bus_name, const std::vector<std
 }
 
 void TransportCatalogue::AddStop(std::string_view stop_name, double lat, double lng) {
-    stops_.emplace_back(stop_name, lat, lng);
+    const Stop* stop = &stops_.emplace_back(stop_name, lat, lng);
+    stops_to_name_[stop->name] = stop;
 }
 
-std::tuple<bool, std::string, size_t, size_t, double> TransportCatalogue::GetDataForBus(std::string_view bus) const {
-    if (SearchBusByName(bus) == buses_.end()) {
-        return tuple(false, string(bus), 0, 0, 0);
+std::tuple<std::string, size_t, size_t, double> TransportCatalogue::GetDataForBus(std::string_view bus) const {
+    const Bus* bus_ptr = SearchBusByName(bus);
+    if (bus_ptr == nullptr) {
+        return tuple(string(bus), 0, 0, 0);
     }
-    const size_t stops_amount = SearchBusByName(bus)->stops.size();
-    const size_t unique_stops_amount = unique_stops_for_bus_.at(*SearchBusByName(bus)).size();
-    const double route_length = transform_reduce(SearchBusByName(bus)->stops.begin(), SearchBusByName(bus)->stops.end() - 1, SearchBusByName(bus)->stops.begin() + 1,
+    const size_t stops_amount = bus_ptr->stops.size();
+    const size_t unique_stops_amount = unique_stops_for_bus_.at(*bus_ptr).size();
+    const double route_length = transform_reduce(bus_ptr->stops.begin(), bus_ptr->stops.end() - 1, bus_ptr->stops.begin() + 1,
                                                  0.0, std::plus<>(), [](const Stop* lhs, const Stop* rhs) {
                                                                                                 return ComputeDistance(lhs->coordinates, rhs->coordinates);
                                                                                             });
-    return { true, string(bus), stops_amount, unique_stops_amount, route_length };
+    return {string(bus), stops_amount, unique_stops_amount, route_length };
 }

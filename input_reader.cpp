@@ -10,7 +10,7 @@ void SplitData(AddData& data, std::string_view str) {
         int64_t pos_end = str.npos;
         if (str.find('-') != pos_end) {
             while (!str.empty()) {
-                data.data_bus.first.push_back(string(str.substr(0, str.find_first_of('-') - 1)));
+                data.data_bus.first.emplace_back(str.substr(0, str.find_first_of('-') - 1));
                 str.remove_prefix(str.find_first_of('-') == pos_end ? str.size() : str.find_first_of('-') + 2);
             }
             for (int i = data.data_bus.first.size() - 2; i >= 0; --i) {
@@ -19,7 +19,7 @@ void SplitData(AddData& data, std::string_view str) {
         }
         else {
             while (!str.empty()) {
-                data.data_bus.first.push_back(string(str.substr(0, str.find_first_of('>') - 1)));
+                data.data_bus.first.emplace_back(str.substr(0, str.find_first_of('>') - 1));
                 str.remove_prefix(str.find_first_of('>') == pos_end ? str.size() : str.find_first_of('>') + 2);
             }
         }
