@@ -2,6 +2,8 @@
 
 using namespace std;
 
+namespace transport_catalogue {
+namespace detail {
 void SplitData(AddData& data, std::string_view str) {
     if (data.type == AddDataType::ADD_WAY){
         data.data_bus.second = str.substr(0, str.find_first_of(':'));
@@ -30,9 +32,18 @@ void SplitData(AddData& data, std::string_view str) {
         double lat, lon;
         lat = stod(string(str.substr(0, str.find_first_of(','))));
         str.remove_prefix(str.find_first_of(',') + 2);
-        lon = stod(string(str));
-        data.data_stop = { string(stop_name), lat, lon };
+        lon = stod(string(str.substr(0, str.find_first_of(','))));
+        str.remove_prefix(str.find_first_of(',') == str.npos ? str.size() : str.find_first_of(',') + 2);
+        vector<pair<string, int>> dists;
+        while (str.size() > 1) {
+            const int dist = stoi(string(str.substr(0, str.find_first_of('m'))));
+            string_view dist_to = str.substr(str.find_first_of('t') + 3, str.find_first_of(',') - str.find_first_of('t') - 3);
+            str.remove_prefix(str.find_first_of(',') == str.npos ? str.size() : str.find_first_of(',') + 2);
+            dists.emplace_back(string(dist_to), dist);
+        }
+        data.data_stop = tuple(string(stop_name), lat, lon, dists );
     }
+}
 }
 
 std::istream& operator>>(std::istream& in, AddData& q) {
@@ -43,4 +54,5 @@ std::istream& operator>>(std::istream& in, AddData& q) {
     q.type = (type_query == "Stop"s ? AddDataType::ADD_STOP : AddDataType::ADD_WAY);
     SplitData(q, query_sv.substr(type_query.size() + 1));
     return in;
+}
 }

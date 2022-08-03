@@ -11,6 +11,7 @@
 
 #include "geo.h"
 
+namespace transport_catalogue {
 struct Stop {
     Stop(std::string_view n, double lat, double lng);
     Stop(Stop&& stop);
@@ -35,6 +36,13 @@ struct StopHasher {
     }
     size_t operator() (const Stop* stop) const {
         return str_hasher(stop->name) + double_hasher(stop->coordinates.lat) * 37 + double_hasher(stop->coordinates.lng) * 37 * 37;
+    }
+};
+
+struct StopPairHasher {
+    StopHasher stop_hash;
+    size_t operator() (std::pair<const Stop*, const Stop*> p) const {
+        return stop_hash(p.first) + stop_hash(p.second) * 37;
     }
 };
 
@@ -78,8 +86,10 @@ class TransportCatalogue {
 public:
     void AddBus(std::string_view bus_name, const std::vector<std::string> &stops);
     void AddStop(std::string_view stop_name, double lat, double lng);
-    std::tuple<std::string_view, size_t, size_t, double> GetDataForBus(std::string_view bus) const;
+    std::tuple<std::string_view, size_t, size_t, double, double> GetDataForBus(std::string_view bus) const;
     std::tuple<bool, std::string_view, std::set<std::string_view, std::less<>>> GetDataForStop(std::string_view stop_name) const;
+    void SetDistBetweenStops(std::string_view lhs, std::string_view rhs, int dist);
+    int GetDistBetweenStops(const Stop* lhs, const Stop* rhs) const;
 private:
     const Bus* SearchBusByName(std::string_view name) const;
     const Stop* SearchStopByName(std::string_view name) const;
@@ -89,4 +99,6 @@ private:
     std::unordered_map<std::string_view, const Bus*> bus_to_name;
     std::unordered_map<std::string_view, std::set<std::string_view, std::less<>>> unique_buses_for_stop_;
     std::unordered_map<const Bus*, std::unordered_set<const Stop*>, BusHasher> unique_stops_for_bus_;
+    std::unordered_map<std::pair<const Stop*, const Stop*>, int, StopPairHasher> dist_between_stops_;
 };
+}

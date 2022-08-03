@@ -2,6 +2,7 @@
 
 using namespace std;
 
+namespace transport_catalogue {
 std::istream& operator>>(std::istream& in, Query& q) {
     std::string query;
     getline(in, query);
@@ -12,4 +13,5 @@ std::istream& operator>>(std::istream& in, Query& q) {
         q.bus_name = query.substr(4);
     }
     return in;
+}
 }
