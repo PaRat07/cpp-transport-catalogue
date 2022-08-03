@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <unordered_map>
 #include <unordered_set>
+#include <set>
 
 #include "geo.h"
 
@@ -38,7 +39,7 @@ struct StopHasher {
 };
 
 struct Bus {
-    Bus(std::string_view n, std::vector<const Stop*> s);
+    Bus(std::string_view n, const std::vector<const Stop*> &s);
     Bus(Bus&& bus);
     Bus(const Bus& bus) = default;
     Bus() = default;
@@ -77,14 +78,15 @@ class TransportCatalogue {
 public:
     void AddBus(std::string_view bus_name, const std::vector<std::string> &stops);
     void AddStop(std::string_view stop_name, double lat, double lng);
-    std::tuple<std::string, size_t, size_t, double> GetDataForBus(std::string_view bus) const;
+    std::tuple<std::string_view, size_t, size_t, double> GetDataForBus(std::string_view bus) const;
+    std::tuple<bool, std::string_view, std::set<std::string_view, std::less<>>> GetDataForStop(std::string_view stop_name) const;
 private:
     const Bus* SearchBusByName(std::string_view name) const;
     const Stop* SearchStopByName(std::string_view name) const;
     std::deque<Stop> stops_;
     std::deque<Bus> buses_;
-    std::unordered_map<std::string_view, const Stop*, std::hash<std::string_view>> stops_to_name_;
-    std::unordered_map<std::string_view , const Bus*, std::hash<std::string_view>> bus_to_name;
-    std::unordered_map<Stop, std::unordered_set<const Bus*, BusHasher>, StopHasher> unique_buses_for_stop_;
-    std::unordered_map<Bus, std::unordered_set<const Stop*>, BusHasher> unique_stops_for_bus_;
+    std::unordered_map<std::string_view, const Stop*> stops_to_name_;
+    std::unordered_map<std::string_view, const Bus*> bus_to_name;
+    std::unordered_map<std::string_view, std::set<std::string_view, std::less<>>> unique_buses_for_stop_;
+    std::unordered_map<const Bus*, std::unordered_set<const Stop*>, BusHasher> unique_stops_for_bus_;
 };

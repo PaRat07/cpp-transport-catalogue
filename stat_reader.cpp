@@ -3,7 +3,13 @@
 using namespace std;
 
 std::istream& operator>>(std::istream& in, Query& q) {
-    getline(in, q.bus_name);
-    q.bus_name = string(q.bus_name.substr(q.bus_name.find_first_of(' ') + 1));
+    std::string query;
+    getline(in, query);
+    if (query.substr(0, query.find_first_of(' ')) == "Stop"s) {
+        q.stop_name = query.substr(5);
+    }
+    else {
+        q.bus_name = query.substr(4);
+    }
     return in;
 }

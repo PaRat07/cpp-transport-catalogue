@@ -8,6 +8,7 @@
 
 struct Query {
     std::string bus_name;
+    std::string stop_name;
 };
 
 
