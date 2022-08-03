@@ -5,6 +5,9 @@
 #include <vector>
 #include <tuple>
 
+#include "transport_catalogue.h"
+#include "stat_reader.h"
+
 using std::literals::string_literals::operator""s;
 
 namespace transport_catalogue {
@@ -21,6 +24,7 @@ struct AddData {
 namespace detail {
 void SplitData(AddData& data, std::string_view query);
 }
+void GetData(TransportCatalogue &cat);
 
 std::istream& operator>>(std::istream& in, AddData& q);
 }

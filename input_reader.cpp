@@ -52,7 +52,39 @@ std::istream& operator>>(std::istream& in, AddData& q) {
     string_view query_sv = query;
     std::string_view type_query = query_sv.substr(0, query_sv.find_first_of(' '));
     q.type = (type_query == "Stop"s ? AddDataType::ADD_STOP : AddDataType::ADD_WAY);
-    SplitData(q, query_sv.substr(type_query.size() + 1));
+    detail::SplitData(q, query_sv.substr(type_query.size() + 1));
     return in;
+}
+
+void GetData(TransportCatalogue &cat) {
+    int query_count;
+    string str;
+    cin >> query_count;
+    getline(cin, str);
+    vector<AddData> bus_add;
+    vector<pair<pair<string, string>, int>> distances;
+    for (int i = 0; i < query_count; ++i) {
+        AddData d;
+        cin >> d;
+        if (d.type == AddDataType::ADD_WAY) {
+            bus_add.push_back(d);
+        } else {
+            double lat, lng;
+            string stop_name;
+            vector<pair<string, int>> dists;
+            tie(stop_name, lat, lng, dists) = d.data_stop;
+            cat.AddStop(stop_name, lat, lng);
+            distances.resize(distances.size() + dists.size());
+            transform(dists.begin(), dists.end(), distances.end() - dists.size(), [&stop_name](const pair<string, int> &p) {
+                return pair(pair(stop_name, p.first), p.second);
+            });
+        }
+    }
+    for (const auto i : distances) {
+        cat.SetDistBetweenStops(i.first.first, i.first.second, i.second);
+    }
+    for (const auto &i: bus_add) {
+        cat.AddBus(i.data_bus.second, i.data_bus.first);
+    }
 }
 }

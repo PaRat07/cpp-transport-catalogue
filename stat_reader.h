@@ -12,6 +12,7 @@ struct Query {
     std::string stop_name;
 };
 
+void GetAndDoQueries(TransportCatalogue &cat);
 
 std::istream& operator>>(std::istream& in, Query& q);
 }
