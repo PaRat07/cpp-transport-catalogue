@@ -108,7 +108,7 @@ namespace json {
 
         Node LoadBool(istream& input) {
             string word;
-            for (char sym; input.peek() != -1 && input.peek() != ',' && input.peek() != '}' && input.peek() != ']' && input.peek() != ' ' && (sym = input.get());) {
+            for (char sym; input.peek() != -1 && isalpha(input.peek()) && (sym = input.get());) {
                 word.push_back(sym);
             }
             if (word == "true") {
@@ -186,8 +186,8 @@ namespace json {
                 try {
                     return LoadInt(input);
                 }
-                catch(...) {
-                    throw ParsingError("failed parsing int or double");
+                catch(const std::exception &exc) {
+                    throw ParsingError(exc.what());
                 }
             }
         }
@@ -210,8 +210,8 @@ namespace json {
             : data_(value) {
     }
 
-    Node::Node(string value)
-            : data_(value)
+    Node::Node(string_view value)
+            : data_(string{value})
     {
     }
 
@@ -381,7 +381,7 @@ namespace json {
             }
             ctx.PrintIndent();
             std::visit(
-                    [&ctx, this](const auto& value){ PrintValue(value, ctx); },
+                    [&ctx, this](const auto& value){ PrintValue(value, ctx.Indented()); },
                     i.GetValue());
         }
         ctx.out << std::endl;
@@ -404,7 +404,8 @@ namespace json {
                     [&ctx, this](const auto& value){ PrintValue(value, ctx.Indented()); },
                     v.GetValue());
         }
-        ctx.out << std::endl << '}';
+        ctx.out << std::endl;
+        ctx.out << '}';
     }
 
     void Node::PrintNode(const json::Node::PrintContext &ctx) const {

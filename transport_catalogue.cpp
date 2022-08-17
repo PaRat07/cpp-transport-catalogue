@@ -4,22 +4,6 @@
 using namespace std;
 
 namespace transport_catalogue {
-Stop::Stop(Stop &&stop)
-        : name(exchange(stop.name, "")), coordinates() {
-}
-
-Stop::Stop(string_view n, double lat, double lng)
-        : name(n), coordinates({lat, lng}) {
-}
-
-Bus::Bus(Bus &&bus)
-        : name(exchange(bus.name, ""s)), stops(exchange(bus.stops, {})) {
-}
-
-Bus::Bus(string_view n, const std::vector<const Stop *> &s)
-        : name(n), stops(s) {
-}
-
 void TransportCatalogue::SetDistBetweenStops(string_view lhs, string_view rhs, int dist) {
     dist_between_stops_[{SearchStopByName(lhs), SearchStopByName(rhs)}] = dist;
 }

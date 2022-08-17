@@ -9,16 +9,22 @@
  * а также код обработки запросов к базе и формирование массива ответов в формате JSON
  */
 
-struct Query {
-    explicit Query(const json::Document &doc)
-        : data(doc)
+struct BusDataForAdd {
+    BusDataForAdd(std::string n, std::vector<std::string> s)
+        : name(std::move(n))
+        , stops(std::move(s))
     {
 
     }
-    Query& operator=(const json::Document &doc);
+    std::string name;
+    std::vector<std::string> stops;
+};
+
+
+struct Query {
+    Query(std::istream &in);
     json::Document data;
 };
 
-std::istream &operator>>(std::istream &out, Query &q);
 
-void SolveQuery(transport_catalogue::TransportCatalogue &cat, Query q);
+void SolveQuery(transport_catalogue::TransportCatalogue &cat, Query q, std::ostream &out);

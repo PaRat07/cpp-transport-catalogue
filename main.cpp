@@ -3,6 +3,7 @@
 #include <iomanip>
 
 #include "transport_catalogue.h"
+#include "json_reader.h"
 
 using namespace std;
 using namespace transport_catalogue;
@@ -17,4 +18,7 @@ int main() {
      * с ответами.
      * Вывести в stdout ответы в виде JSON
      */
+    transport_catalogue::TransportCatalogue cat;
+    Query q(cin);
+    SolveQuery(cat, q, cout);
 }

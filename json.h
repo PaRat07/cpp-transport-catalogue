@@ -33,7 +33,7 @@ namespace json {
         Node(bool value);
         Node(std::nullptr_t);
         Node(double value);
-        Node(std::string value);
+        Node(std::string_view value);
 
         const Array& AsArray() const;
         const Dict& AsMap() const;
