@@ -11,11 +11,11 @@
 namespace json {
 
     class Node;
-// Сохраните объявления Dict и Array без изменения
+
     using Dict = std::map<std::string, Node>;
     using Array = std::vector<Node>;
 
-// Эта ошибка должна выбрасываться при ошибках парсинга JSON
+    // Эта ошибка должна выбрасываться при ошибках парсинга JSON
     class ParsingError : public std::runtime_error {
     public:
         using runtime_error::runtime_error;
@@ -35,6 +35,7 @@ namespace json {
         Node(double value);
         Node(std::string_view value);
 
+        // Приводят узел к этому типу данных
         const Array& AsArray() const;
         const Dict& AsMap() const;
         int AsInt() const;
@@ -42,6 +43,7 @@ namespace json {
         double AsDouble() const;
         const std::string& AsString() const;
 
+        // Возвращаю, является ли этот узел этом типом
         bool IsInt() const;
         bool IsDouble() const;
         bool IsPureDouble() const;
@@ -50,7 +52,10 @@ namespace json {
         bool IsNull() const;
         bool IsArray() const;
         bool IsMap() const;
+
+        // Возвращает копию значения узла
         std::variant<std::nullptr_t, int, double, std::string, bool, Array, Dict> GetValue() const;
+
         bool operator==(const Node &other) const;
         bool operator!=(const Node &other) const;
         Node &operator=(const Node &other);
@@ -68,6 +73,8 @@ namespace json {
                 return {out, indent_step, indent_step + indent};
             }
         };
+
+        // Печатают значение всех возможных типов узла
         void PrintValue(const Dict &value, const PrintContext& ctx) const;
         void PrintValue(const int &value, const PrintContext& ctx) const;
         void PrintValue(const bool &value, const PrintContext& ctx) const;
@@ -91,14 +98,17 @@ namespace json {
         }
         explicit Document(Node root);
 
+        // Возвращает в сыром виде узел, который хранит
         const Node& GetRoot() const;
 
     private:
         Node root_;
     };
 
+    // Загружает из потока JSON
     Document Load(std::istream& input);
 
+    // Печатает документ в поток
     void Print(const Document& doc, std::ostream& output);
 
 }  // namespace json

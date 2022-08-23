@@ -325,6 +325,7 @@ namespace json {
     bool Node::operator!=(const Node &other) const {
         return !(*this == other);
     }
+
     std::variant<std::nullptr_t, int, double, std::string, bool, Array, Dict> Node::GetValue() const {
         return data_;
     }
@@ -371,46 +372,50 @@ namespace json {
 
     void Node::PrintValue(const Array &value, const PrintContext& ctx) const {
         ctx.out << '[' << std::endl;
+        auto ctx_value = ctx.Indented();
         bool is_first = true;
         for (const auto &i : value) {
             if (is_first) {
                 is_first = false;
             }
             else {
-                ctx.out << "," << std::endl;
+                ctx_value.out << "," << std::endl;
             }
-            ctx.PrintIndent();
+            ctx_value.PrintIndent();
             std::visit(
-                    [&ctx, this](const auto& value){ PrintValue(value, ctx.Indented()); },
+                    [&ctx_value, this](const auto& value){ PrintValue(value, ctx_value); },
                     i.GetValue());
         }
         ctx.out << std::endl;
+        ctx.PrintIndent();
         ctx.out << ']';
     }
 
     void Node::PrintValue(const Dict &value, const PrintContext& ctx) const {
         ctx.out << '{' << std::endl;
+        auto ctx_value = ctx.Indented();
         bool is_first = true;
         for (const auto &[k, v] : value) {
             if (is_first) {
                 is_first = false;
             }
             else {
-                ctx.out << "," << std::endl;
+                ctx_value.out << "," << std::endl;
             }
-            ctx.PrintIndent();
-            ctx.out << '\"' << k << "\" : ";
+            ctx_value.PrintIndent();
+            ctx_value.out << '\"' << k << "\" : ";
             std::visit(
-                    [&ctx, this](const auto& value){ PrintValue(value, ctx.Indented()); },
+                    [&ctx_value, this](const auto& value){ PrintValue(value, ctx_value); },
                     v.GetValue());
         }
         ctx.out << std::endl;
+        ctx.PrintIndent();
         ctx.out << '}';
     }
 
     void Node::PrintNode(const json::Node::PrintContext &ctx) const {
         std::visit(
-                [&ctx, this](const auto& value){ PrintValue(value, ctx.Indented()); },
+                [&ctx, this](const auto& value){ PrintValue(value, ctx); },
                 data_);
     }
     Node &Node::operator=(const Node &other) {

@@ -2,10 +2,10 @@
 
 using namespace std;
 
-void SolveQuery(transport_catalogue::TransportCatalogue &cat, Query q, std::ostream &out) {
+void AddData(transport_catalogue::TransportCatalogue &cat, const json::Array &data, renderer::MapRenderer &map) {
     std::vector<BusDataForAdd> buses_queries;
     vector<pair<pair<string, string>, int>> stop_dists;
-    for (const auto &i : q.data.GetRoot().AsMap().at("base_requests").AsArray()) {
+    for (const auto &i : data) {
         if (i.AsMap().at("type").AsString() == "Stop") {
             cat.AddStop(i.AsMap().at("name").AsString(), i.AsMap().at("latitude").AsDouble(), i.AsMap().at("longitude").AsDouble());
             for (const auto &[name, dist] : i.AsMap().at("road_distances").AsMap()) {
@@ -14,74 +14,74 @@ void SolveQuery(transport_catalogue::TransportCatalogue &cat, Query q, std::ostr
         }
         else {
             vector<string> stops(i.AsMap().at("stops").AsArray().size());
-            for (int s = 0; s < stops.size(); ++s) {
+            for (size_t s = 0; s < stops.size(); ++s) {
                 stops[s] = i.AsMap().at("stops").AsArray()[s].AsString();
             }
-            if (!i.AsMap().at("is_roundtrip").AsBool()) {
-                const int old_size = stops.size();
-                stops.resize(old_size * 2 - 1);
-                std::copy(stops.rbegin() + old_size, stops.rend(), stops.begin() + old_size);
-            }
-            buses_queries.emplace_back(i.AsMap().at("name").AsString(), stops);
+            buses_queries.emplace_back(i.AsMap().at("name").AsString(), stops, i.AsMap().at("is_roundtrip").AsBool());
         }
     }
     for (const auto &[buses, dist] : stop_dists) {
         cat.SetDistBetweenStops(buses.first, buses.second, dist);
     }
     for (const auto &i : buses_queries) {
-        cat.AddBus(i.name, i.stops);
+        map.AddBus(*cat.AddBus(i.name, i.stops, i.is_roundtrip));
     }
-    json::Array arr;
-    for (const auto &i : q.data.GetRoot().AsMap().at("stat_requests").AsArray()) {
-        if (i.AsMap().at("type").AsString() == "Bus") {
-            double curv;
-            string bus_name;
-            int length, stop_count, unique_stops_count;
-            tie(bus_name, stop_count, unique_stops_count, length, curv) = cat.GetDataForBus(i.AsMap().at("name").AsString());
-            if (stop_count == 0) {
-                arr.emplace_back(json::Dict {
-                        {"request_id",    i.AsMap().at("id")},
-                        {"error_message", "not found"}
+}
+
+json::Node SolveQueries(const RequestHandler &hand, const json::Array &data) {
+    json::Array ans;
+    for (const json::Node &i : data) {
+        if (i.AsMap().at("type").AsString() == "Map") {
+            ans.emplace_back(json::Dict{
+                    {"map", json::Node(hand.RenderMap())},
+                    {"request_id", i.AsMap().at("id")}
+            });
+        }
+        else if (i.AsMap().at("type").AsString() == "Bus") {
+            const std::optional<BusStat> bus_stat = hand.GetBusStat(i.AsMap().at("name").AsString());
+            if (bus_stat.has_value()) {
+                ans.emplace_back(json::Dict{
+                        {"curvature", json::Node(bus_stat->curvature)},
+                        {"request_id", i.AsMap().at("id")},
+                        {"route_length", json::Node(static_cast<int>(bus_stat->route_length))},
+                        {"stop_count", json::Node(static_cast<int>(bus_stat->stops_amount))},
+                        {"unique_stop_count", json::Node(static_cast<int>(bus_stat->unique_stops_amount))}
                 });
             }
             else {
-                arr.emplace_back(json::Dict{
-                        {"curvature",         curv},
-                        {"route_length",      length},
-                        {"stop_count",        stop_count},
-                        {"unique_stop_count", unique_stops_count},
-                        {"request_id",        i.AsMap().at("id")}
+                ans.emplace_back(json::Dict{
+                        {"error_message", json::Node("not found"s)},
+                        {"request_id", i.AsMap().at("id")}
                 });
             }
         }
-        else {
-            bool successful;
-            string name;
-            std::set<std::string_view, std::less<>> buses;
-            tie(successful, name, buses) = cat.GetDataForStop(i.AsMap().at("name").AsString());
-            vector<json::Node> buses_vec(buses.size());
-            std::transform(buses.begin(), buses.end(), buses_vec.begin(), [](string_view bus_name) {
-                return json::Node(bus_name);
-            });
-            if (successful) {
-                arr.emplace_back(json::Dict{
-                        {"buses",      json::Array(buses_vec.begin(), buses_vec.end())},
+        else if (i.AsMap().at("type").AsString() == "Stop") {
+            const std::optional<StopsStat> stop_stat = hand.GetStopStat(i.AsMap().at("name").AsString());
+            if (stop_stat.has_value()) {
+                json::Array buses(stop_stat->buses.size());
+                std::transform(stop_stat->buses.begin(), stop_stat->buses.end(), buses.begin(), [](std::string_view bus_name) {
+                    return json::Node(bus_name);
+                });
+                ans.emplace_back(json::Dict{
+                        {"buses", buses},
                         {"request_id", i.AsMap().at("id")}
                 });
             }
             else {
-                arr.emplace_back(json::Dict {
-                        {"request_id",    i.AsMap().at("id")},
-                        {"error_message", "not found"}
+                ans.emplace_back(json::Dict{
+                        {"error_message", json::Node("not found"s)},
+                        {"request_id", i.AsMap().at("id")}
                 });
             }
         }
     }
-    json::Print(json::Document(arr), out);
+    return ans;
 }
 
-Query::Query(std::istream &in)
-    : data(json::Load(in))
+BusDataForAdd::BusDataForAdd(std::string n, std::vector<std::string> s, bool i_r)
+        : name(std::move(n))
+        , stops(std::move(s))
+        , is_roundtrip(i_r)
 {
 
 }

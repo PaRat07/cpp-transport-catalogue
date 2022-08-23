@@ -4,6 +4,7 @@
 
 #include "transport_catalogue.h"
 #include "json_reader.h"
+#include "request_handler.h"
 
 using namespace std;
 using namespace transport_catalogue;
@@ -19,6 +20,10 @@ int main() {
      * Вывести в stdout ответы в виде JSON
      */
     transport_catalogue::TransportCatalogue cat;
-    Query q(cin);
-    SolveQuery(cat, q, cout);
+    auto query = json::Load(cin);
+    MapSettings settings(query.GetRoot().AsMap().at("render_settings").AsMap());
+    renderer::MapRenderer map(settings);
+    RequestHandler handler(cat, map);
+    AddData(cat, query.GetRoot().AsMap().at("base_requests").AsArray(), map);
+    json::Print(json::Document(SolveQueries(handler, query.GetRoot().AsMap().at("stat_requests").AsArray())), cout);
 }

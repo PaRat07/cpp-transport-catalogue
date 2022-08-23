@@ -4,27 +4,18 @@
 
 #include "json.h"
 #include "transport_catalogue.h"
-/*
- * Здесь можно разместить код наполнения транспортного справочника данными из JSON,
- * а также код обработки запросов к базе и формирование массива ответов в формате JSON
- */
+#include "map_renderer.h"
+#include "request_handler.h"
 
 struct BusDataForAdd {
-    BusDataForAdd(std::string n, std::vector<std::string> s)
-        : name(std::move(n))
-        , stops(std::move(s))
-    {
-
-    }
+    BusDataForAdd(std::string n, std::vector<std::string> s, bool i_r);
     std::string name;
     std::vector<std::string> stops;
+    bool is_roundtrip;
 };
 
+// Загружает данные из потока в каталог и карту
+void AddData(transport_catalogue::TransportCatalogue &cat, const json::Array &data, renderer::MapRenderer &map);
 
-struct Query {
-    Query(std::istream &in);
-    json::Document data;
-};
-
-
-void SolveQuery(transport_catalogue::TransportCatalogue &cat, Query q, std::ostream &out);
+// Возвращает ответы на запросы из потока в виде JSON
+json::Node SolveQueries(const RequestHandler &hand, const json::Array &data);

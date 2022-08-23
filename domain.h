@@ -3,77 +3,90 @@
 #include <string>
 #include <vector>
 #include <cmath>
+#include <utility>
+#include <set>
 #include "geo.h"
+#include "svg.h"
+#include "json.h"
 
-/*
- * В этом файле вы можете разместить классы/структуры, которые являются частью предметной области (domain)
- * вашего приложения и не зависят от транспортного справочника. Например Автобусные маршруты и Остановки. 
- *
- * Их можно было бы разместить и в transport_catalogue.h, однако вынесение их в отдельный
- * заголовочный файл может оказаться полезным, когда дело дойдёт до визуализации карты маршрутов:
- * визуализатор карты (map_renderer) можно будет сделать независящим от транспортного справочника.
- *
- * Если структура вашего приложения не позволяет так сделать, просто оставьте этот файл пустым.
- *
- */
+// Хранит данные об остановке
 struct Stop {
     Stop(std::string_view n, double lat, double lng);
     Stop(Stop&& stop);
     Stop(const Stop&) = default;
     std::string name;
     geo::Coordinates coordinates;
-    bool operator==(const Stop &other) const {
-        return other.name == name && other.coordinates == coordinates;
-    }
+    bool operator==(const Stop &other) const;
     Stop& operator=(const Stop &other) = default;
 };
 
+// Хеширует остановки
 struct StopHasher {
     std::hash<std::string> str_hasher;
     std::hash<double> double_hasher;
-    size_t operator() (const Stop& stop) const {
-        return str_hasher(stop.name) + double_hasher(stop.coordinates.lat) * 37 + double_hasher(stop.coordinates.lng) * 37 * 37;
-    }
-    size_t operator() (const Stop* stop) const {
-        return str_hasher(stop->name) + double_hasher(stop->coordinates.lat) * 37 + double_hasher(stop->coordinates.lng) * 37 * 37;
-    }
+    size_t operator() (const Stop& stop) const;
+    size_t operator() (const Stop* stop) const;
 };
 
+// Хэширует пару остановок
 struct StopPairHasher {
     StopHasher stop_hash;
-    size_t operator() (std::pair<const Stop*, const Stop*> p) const {
-        return stop_hash(p.first) + stop_hash(p.second) * 37;
-    }
+    size_t operator() (std::pair<const Stop*, const Stop*> p) const;
 };
 
+// Хранит даные о маршруте
 struct Bus {
-    Bus(std::string_view n, const std::vector<const Stop*> &s);
+    Bus(std::string_view n, const std::vector<const Stop*> &s, bool i_r);
     Bus(Bus&& bus) noexcept;
     Bus(const Bus& bus) = default;
     Bus() = default;
     std::string name;
     std::vector<const Stop*> stops;
-    bool operator==(const Bus &other) const {
-        return other.name == name && other.stops == stops;
-    }
+    bool is_roundtrip;
+    bool operator==(const Bus &other) const;
     Bus& operator=(const Bus &other) = default;
 };
 
+// Хэширует маршрут
 struct BusHasher {
     std::hash<std::string> str_hasher;
     StopHasher stop_hasher;
-    size_t operator() (const Bus &bus) const {
-        size_t ans = str_hasher(bus.name);
-        for (int i = 0; i < bus.stops.size(); ++i) {
-            ans += stop_hasher(*bus.stops[i]) * std::pow(37, i + 1);
-        }
-        return ans;
-    }
-    size_t operator() (const Bus* const bus) const {
-        size_t ans = str_hasher(bus->name);
-        for (int i = 0; i < bus->stops.size(); ++i) {
-            ans += stop_hasher(*bus->stops[i]) * std::pow(37, i + 1);
-        }
-        return ans;
-    }
+    size_t operator() (const Bus &bus) const;
+    size_t operator() (const Bus* const bus) const;
+};
+
+// Хранит данные, которые возвращаются при запросе маршрута по имени
+struct BusStat {
+    BusStat(std::string_view n, size_t s_a, size_t u_s_a, size_t r_l, double c);
+
+    std::string_view name;
+    size_t stops_amount;
+    size_t unique_stops_amount;
+    size_t route_length;
+    double curvature;
+};
+
+// Хранит данные, которые возвращаются при запросе остановки по имени
+struct StopsStat {
+    StopsStat(std::string_view n, std::set<std::string_view, std::less<>> b);
+
+    std::string_view name;
+    std::set<std::string_view, std::less<>> buses;
+};
+
+// Хранит настройки карты
+struct MapSettings {
+    MapSettings(const json::Dict &data);
+    double width;
+    double height;
+    double padding;
+    double line_width;
+    double stop_radius;
+    int bus_label_font_size;
+    svg::Point bus_label_offset;
+    int stop_label_font_size;
+    svg::Point stop_label_offset;
+    svg::Color underlayer_color;
+    double underlayer_width;
+    std::vector<svg::Color> color_palette;
 };
