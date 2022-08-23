@@ -24,7 +24,7 @@ int main() {
     MapSettings settings(query.GetRoot().AsMap().at("render_settings").AsMap());
     renderer::MapRenderer map(settings);
     RequestHandler handler(cat, map);
-    JsonReader reader(cat, map, handler);
+    JsonReader reader(cat, map);
     reader.AddData(query.GetRoot().AsMap().at("base_requests").AsArray());
-    json::Print(json::Document(reader.SolveQueries(query.GetRoot().AsMap().at("stat_requests").AsArray())), cout);
+    json::Print(json::Document(handler.SolveQueries(query.GetRoot().AsMap().at("stat_requests").AsArray())), cout);
 }

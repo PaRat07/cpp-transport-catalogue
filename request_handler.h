@@ -28,6 +28,9 @@ public:
     std::optional<StopsStat> GetStopStat(const std::string_view &stop_name) const;
 
     std::string RenderMap() const;
+
+    // Возвращает ответы на запросы из потока в виде JSON
+    json::Node SolveQueries(const json::Array &data) const;
 private:
     const transport_catalogue::TransportCatalogue& cat_;
     const renderer::MapRenderer &map_;
