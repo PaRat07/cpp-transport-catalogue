@@ -5,6 +5,8 @@
 #include <cmath>
 #include <utility>
 #include <set>
+#include <algorithm>
+
 #include "geo.h"
 #include "svg.h"
 #include "json.h"

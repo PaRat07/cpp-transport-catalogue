@@ -5,12 +5,14 @@
 #include <string_view>
 #include <unordered_set>
 #include <optional>
+#include <sstream>
 
 #include "transport_catalogue.h"
 #include "svg.h"
 #include "domain.h"
 #include "map_renderer.h"
-
+#include "json_builder.h"
+#include "json.h"
 
 // Класс RequestHandler играет роль Фасада, упрощающего взаимодействие JSON reader-а
 // с другими подсистемами приложения.

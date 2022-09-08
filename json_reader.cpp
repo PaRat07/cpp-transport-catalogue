@@ -15,18 +15,18 @@ void JsonReader::AddData(const json::Array &data) {
     std::vector<BusDataForAdd> buses_queries;
     vector<pair<pair<string, string>, int>> stop_dists;
     for (const auto &i : data) {
-        if (i.AsMap().at("type").AsString() == "Stop") {
-            cat_.AddStop(i.AsMap().at("name").AsString(), i.AsMap().at("latitude").AsDouble(), i.AsMap().at("longitude").AsDouble());
-            for (const auto &[name, dist] : i.AsMap().at("road_distances").AsMap()) {
-                stop_dists.push_back({{i.AsMap().at("name").AsString(), name}, dist.AsInt()});
+        if (i.AsDict().at("type").AsString() == "Stop") {
+            cat_.AddStop(i.AsDict().at("name").AsString(), i.AsDict().at("latitude").AsDouble(), i.AsDict().at("longitude").AsDouble());
+            for (const auto &[name, dist] : i.AsDict().at("road_distances").AsDict()) {
+                stop_dists.push_back({{i.AsDict().at("name").AsString(), name}, dist.AsInt()});
             }
         }
         else {
-            vector<string> stops(i.AsMap().at("stops").AsArray().size());
+            vector<string> stops(i.AsDict().at("stops").AsArray().size());
             for (size_t s = 0; s < stops.size(); ++s) {
-                stops[s] = i.AsMap().at("stops").AsArray()[s].AsString();
+                stops[s] = i.AsDict().at("stops").AsArray()[s].AsString();
             }
-            buses_queries.emplace_back(i.AsMap().at("name").AsString(), stops, i.AsMap().at("is_roundtrip").AsBool());
+            buses_queries.emplace_back(i.AsDict().at("name").AsString(), stops, i.AsDict().at("is_roundtrip").AsBool());
         }
     }
     for (const auto &[buses, dist] : stop_dists) {
