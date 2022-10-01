@@ -11,7 +11,6 @@
 #include "svg.h"
 #include "domain.h"
 #include "map_renderer.h"
-#include "json_builder.h"
 #include "json.h"
 
 // Класс RequestHandler играет роль Фасада, упрощающего взаимодействие JSON reader-а
@@ -33,6 +32,8 @@ public:
 
     // Возвращает ответы на запросы из потока в виде JSON
     json::Node SolveQueries(const json::Array &data) const;
+
+    std::optional<RouteStats> GetRoute(std::string_view from, std::string_view to) const;
 private:
     const transport_catalogue::TransportCatalogue& cat_;
     const renderer::MapRenderer &map_;

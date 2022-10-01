@@ -10,6 +10,7 @@
 #include "geo.h"
 #include "svg.h"
 #include "json.h"
+#include "json_builder.h"
 
 // Хранит данные об остановке
 struct Stop {
@@ -91,4 +92,30 @@ struct MapSettings {
     svg::Color underlayer_color;
     double underlayer_width;
     std::vector<svg::Color> color_palette;
+};
+
+struct RoutingSettings {
+    RoutingSettings(const json::Dict &data);
+    RoutingSettings() = default;
+
+    int bus_wait_time;
+    double bus_velocity;
+};
+
+
+enum class EdgeType {
+    WAIT,
+    BUS
+};
+
+struct EdgeInfo {
+    EdgeType type;
+    double time;
+    std::string name;
+    int span_count;
+};
+
+struct RouteStats {
+    double length;
+    std::vector<EdgeInfo> route;
 };

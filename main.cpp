@@ -11,8 +11,8 @@ using namespace std;
 using namespace transport_catalogue;
 
 int main() {
-    transport_catalogue::TransportCatalogue cat;
     auto query = json::Load(cin);
+    transport_catalogue::TransportCatalogue cat(RoutingSettings(query.GetRoot().AsDict().at("routing_settings").AsDict()));
     MapSettings settings(query.GetRoot().AsDict().at("render_settings").AsDict());
     renderer::MapRenderer map(settings);
     RequestHandler handler(cat, map);

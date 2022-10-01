@@ -18,6 +18,13 @@ namespace graph {
     };
 
     template <typename Weight>
+    struct EdgeHasher {
+        size_t operator() (const Edge<Weight> &edge) {
+            return std::hash<size_t>()(edge.from) + std::hash<size_t>()(edge.to) * 37 + std::hash<Weight>()(edge.weight) * 37 * 37;
+        }
+    };
+
+    template <typename Weight>
     class DirectedWeightedGraph {
     private:
         using IncidenceList = std::vector<EdgeId>;
@@ -27,6 +34,7 @@ namespace graph {
         DirectedWeightedGraph() = default;
         explicit DirectedWeightedGraph(size_t vertex_count);
         EdgeId AddEdge(const Edge<Weight>& edge);
+        VertexId AddVertex();
 
         size_t GetVertexCount() const;
         size_t GetEdgeCount() const;
@@ -70,5 +78,11 @@ namespace graph {
     typename DirectedWeightedGraph<Weight>::IncidentEdgesRange
     DirectedWeightedGraph<Weight>::GetIncidentEdges(VertexId vertex) const {
         return ranges::AsRange(incidence_lists_.at(vertex));
+    }
+
+    template<typename Weight>
+    VertexId DirectedWeightedGraph<Weight>::AddVertex() {
+        incidence_lists_.resize(incidence_lists_.size() + 1);
+        return incidence_lists_.size() - 1;
     }
 }  // namespace graph

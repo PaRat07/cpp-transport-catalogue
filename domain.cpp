@@ -108,3 +108,8 @@ StopsStat::StopsStat(std::string_view n, std::set<std::string_view, less<>> b)
         , buses(std::move(b))
 {
 }
+
+RoutingSettings::RoutingSettings(const json::Dict &data)
+        : bus_wait_time(data.at("bus_wait_time").AsInt())
+        , bus_velocity(data.at("bus_velocity").AsDouble() * 1000. / 60.)
+{}

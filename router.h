@@ -29,6 +29,21 @@ namespace graph {
 
         std::optional<RouteInfo> BuildRoute(VertexId from, VertexId to) const;
 
+        void AddVertex(VertexId id) {
+            const int new_size = routes_internal_data_.size() + 1;
+            routes_internal_data_.resize(new_size);
+            std::for_each(routes_internal_data_.begin(), routes_internal_data_.end(), [new_size](std::vector<std::optional<RouteInternalData>> &elem) {
+                elem.resize(new_size);
+            });
+            routes_internal_data_[id][id] = RouteInternalData{ZERO_WEIGHT, std::nullopt};
+        }
+
+        void AddEdge(EdgeId id) {
+            routes_internal_data_[graph_.GetEdge(id).from][graph_.GetEdge(id).to] = { graph_.GetEdge(id).weight, id };
+            RelaxRoutesInternalDataThroughVertex(graph_.GetVertexCount(), graph_.GetEdge(id).from);
+            RelaxRoutesInternalDataThroughVertex(graph_.GetVertexCount(), graph_.GetEdge(id).to);
+        }
+
     private:
         struct RouteInternalData {
             Weight weight;

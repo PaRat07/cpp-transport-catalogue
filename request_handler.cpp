@@ -30,7 +30,7 @@ json::Node RequestHandler::SolveQueries(const json::Array &data) const {
     for (const json::Node &i : data) {
         if (i.AsDict().at("type").AsString() == "Map") {
             ans.StartDict()
-                .Key("map").Value(json::Node(RenderMap()))
+                .Key("map").Value(RenderMap())
                 .Key("request_id").Value(i.AsDict().at("id"))
                 .EndDict();
         }
@@ -67,7 +67,43 @@ json::Node RequestHandler::SolveQueries(const json::Array &data) const {
                                 .EndDict();
             }
         }
+        else if (i.AsDict().at("type").AsString() == "Route") {
+            const std::optional<RouteStats> route_stat = GetRoute(i.AsDict().at("from").AsString(), i.AsDict().at("to").AsString());
+            if (route_stat.has_value()) {
+                json::Array buses(route_stat->route.size());
+                std::transform(route_stat->route.begin(), route_stat->route.end(), buses.begin(), [](const EdgeInfo &inf) {
+                    if (inf.type == EdgeType::BUS) {
+                        return json::Builder().StartDict()
+                                                    .Key("type").Value("Bus")
+                                                    .Key("bus").Value(inf.name)
+                                                    .Key("span_count").Value(inf.span_count)
+                                                    .Key("time").Value(inf.time)
+                                                .EndDict().Build();
+                    }
+                    else {
+                        return json::Builder().StartDict()
+                                .Key("type").Value("Wait")
+                                .Key("stop_name").Value(inf.name)
+                                .Key("time").Value(inf.time)
+                                .EndDict().Build();
+                    }
+                });
+                ans.StartDict() .Key("items").Value(buses)
+                        .Key("request_id").Value(i.AsDict().at("id"))
+                        .Key("total_time").Value(route_stat->length)
+                        .EndDict();
+            }
+            else {
+                ans.StartDict() .Key("error_message").Value(json::Node("not found"s))
+                        .Key("request_id").Value(i.AsDict().at("id"))
+                        .EndDict();
+            }
+        }
     }
     ans.EndArray();
     return ans.Build();
+}
+
+std::optional<RouteStats> RequestHandler::GetRoute(std::string_view from, std::string_view to) const {
+    return cat_.GetRoute(from, to);
 }
