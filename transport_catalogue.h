@@ -22,7 +22,6 @@ class TransportCatalogue {
 public:
     TransportCatalogue(RoutingSettings set)
         : settings_(std::move(set))
-        , router_(graph_)
     {}
 
     // Добавляет автобус в базу данных
@@ -43,7 +42,7 @@ public:
     // Возвращает дистанцию от одной остановки к другой(в случае если запрошена дистанция от А до Б а указанно расстояние от А до Б и от Б до А(они могут быть разными) возвращается расстояние от А до Б)
     int GetDistBetweenStops(const Stop* lhs, const Stop* rhs) const;
 
-    std::optional<RouteStats> GetRoute(std::string_view from, std::string_view to) const;
+    std::optional<RouteStats> GetRoute(std::string_view from, std::string_view to);
 
 private:
     const Bus* SearchBusByName(std::string_view name) const;
@@ -57,7 +56,7 @@ private:
     std::unordered_map<const Bus*, std::unordered_set<const Stop*>, BusHasher> unique_stops_for_bus_;
     std::unordered_map<std::pair<const Stop*, const Stop*>, int, StopPairHasher> dist_between_stops_;
     graph::DirectedWeightedGraph<double> graph_;
-    graph::Router<double> router_;
+    std::optional<graph::Router<double>> router_;
     std::unordered_map<std::string_view, graph::EdgeId> edge_to_name_;
     std::unordered_map<graph::EdgeId, EdgeInfo> info_to_edge_;
 };

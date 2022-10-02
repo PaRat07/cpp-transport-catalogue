@@ -36,7 +36,6 @@ namespace transport_catalogue {
             for (auto stop1 = stop + 1; stop1 != bus_ptr->stops.end(); ++stop1) {
                 dist_between_stops += GetDistBetweenStops(*(stop1 - 1), *stop1);
                 graph::EdgeId edge_id = graph_.AddEdge({graph_.GetEdge(edge_to_name_[(*stop)->name]).to, graph_.GetEdge(edge_to_name_[(*stop1)->name]).from, dist_between_stops / settings_.bus_velocity});
-                router_.AddEdge(edge_id);
                 info_to_edge_[edge_id] = EdgeInfo{ EdgeType::BUS, dist_between_stops / settings_.bus_velocity, string(bus_name), static_cast<int>(stop1 - stop)};
             }
         }
@@ -46,12 +45,10 @@ namespace transport_catalogue {
                 for (auto stop1 = stop + 1; stop1 != bus_ptr->stops.rend(); ++stop1) {
                     dist_between_stops += GetDistBetweenStops(*(stop1 - 1), *stop1);
                     graph::EdgeId edge_id = graph_.AddEdge({graph_.GetEdge(edge_to_name_[(*stop)->name]).to, graph_.GetEdge(edge_to_name_[(*stop1)->name]).from, dist_between_stops / settings_.bus_velocity});
-                    router_.AddEdge(edge_id);
                     info_to_edge_[edge_id] = EdgeInfo{ EdgeType::BUS, dist_between_stops / settings_.bus_velocity, string(bus_name), static_cast<int>(stop1 - stop)};
                 }
             }
         }
-
         return bus_ptr;
     }
 
@@ -60,11 +57,8 @@ namespace transport_catalogue {
         stops_to_name_[stop->name] = stop;
         unique_buses_for_stop_[stop->name];
         graph::VertexId first = graph_.AddVertex();
-        router_.AddVertex(first);
         graph::VertexId second = graph_.AddVertex();
-        router_.AddVertex(second);
         graph::EdgeId id = graph_.AddEdge({ first, second, static_cast<double>(settings_.bus_wait_time) });
-        router_.AddEdge(id);
         edge_to_name_[stop->name] = id;
         info_to_edge_[id] = EdgeInfo { EdgeType::WAIT, static_cast<double>(settings_.bus_wait_time), string(stop_name), 0 };
     }
@@ -104,14 +98,15 @@ namespace transport_catalogue {
         }
     }
 
-    std::optional<RouteStats> TransportCatalogue::GetRoute(std::string_view from, std::string_view to) const {
-        auto route = router_.BuildRoute(graph_.GetEdge(edge_to_name_.at(from)).from, graph_.GetEdge(edge_to_name_.at(to)).from);
+    std::optional<RouteStats> TransportCatalogue::GetRoute(std::string_view from, std::string_view to) {
+        if (!router_.has_value()) { router_.emplace(graph_); }
+        auto route = router_->BuildRoute(graph_.GetEdge(edge_to_name_.at(from)).from, graph_.GetEdge(edge_to_name_.at(to)).from);
         if (route.has_value()) {
             std::vector<EdgeInfo> ans(route->edges.size());
             std::transform(route->edges.begin(), route->edges.end(), ans.begin(), [&](const graph::EdgeId &id) {
                 return info_to_edge_.at(id);
             });
-            return { { route->weight, ans } };
+            return { RouteStats{ route->weight, ans } };
         }
         else {
             return std::nullopt;
