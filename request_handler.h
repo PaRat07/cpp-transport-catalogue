@@ -19,7 +19,7 @@
 class RequestHandler {
 public:
     // MapRenderer понадобится в следующей части итогового проекта
-    RequestHandler(transport_catalogue::TransportCatalogue &c,
+    RequestHandler(const transport_catalogue::TransportCatalogue &c,
                    const renderer::MapRenderer &m);
 
     // Возвращает информацию о маршруте (запрос Bus)
@@ -33,8 +33,8 @@ public:
     // Возвращает ответы на запросы из потока в виде JSON
     json::Node SolveQueries(const json::Array &data);
 
-    std::optional<RouteStats> GetRoute(std::string_view from, std::string_view to);
+    std::optional<RouteStats> GetRoute(std::string_view from, std::string_view to) const;
 private:
-    transport_catalogue::TransportCatalogue& cat_;
+    const transport_catalogue::TransportCatalogue& cat_;
     const renderer::MapRenderer &map_;
 };

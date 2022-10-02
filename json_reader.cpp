@@ -35,6 +35,7 @@ void JsonReader::AddData(const json::Array &data) {
     for (const auto &i : buses_queries) {
         map_.AddBus(*cat_.AddBus(i.name, i.stops, i.is_roundtrip));
     }
+    cat_.InitializeRouter();
 }
 
 JsonReader::JsonReader(transport_catalogue::TransportCatalogue &c, renderer::MapRenderer &m)

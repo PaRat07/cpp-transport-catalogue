@@ -98,8 +98,7 @@ namespace transport_catalogue {
         }
     }
 
-    std::optional<RouteStats> TransportCatalogue::GetRoute(std::string_view from, std::string_view to) {
-        if (!router_.has_value()) { router_.emplace(graph_); }
+    std::optional<RouteStats> TransportCatalogue::GetRoute(std::string_view from, std::string_view to) const {
         auto route = router_->BuildRoute(graph_.GetEdge(edge_to_name_.at(from)).from, graph_.GetEdge(edge_to_name_.at(to)).from);
         if (route.has_value()) {
             std::vector<EdgeInfo> ans(route->edges.size());
@@ -111,6 +110,10 @@ namespace transport_catalogue {
         else {
             return std::nullopt;
         }
+    }
+
+    void TransportCatalogue::InitializeRouter() {
+        router_.emplace(graph_);
     }
 
 }

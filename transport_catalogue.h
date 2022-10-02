@@ -42,7 +42,9 @@ public:
     // Возвращает дистанцию от одной остановки к другой(в случае если запрошена дистанция от А до Б а указанно расстояние от А до Б и от Б до А(они могут быть разными) возвращается расстояние от А до Б)
     int GetDistBetweenStops(const Stop* lhs, const Stop* rhs) const;
 
-    std::optional<RouteStats> GetRoute(std::string_view from, std::string_view to);
+    std::optional<RouteStats> GetRoute(std::string_view from, std::string_view to) const;
+
+    void InitializeRouter();
 
 private:
     const Bus* SearchBusByName(std::string_view name) const;

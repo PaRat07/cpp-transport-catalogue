@@ -16,7 +16,7 @@ std::string RequestHandler::RenderMap() const {
     return ans.str();
 }
 
-RequestHandler::RequestHandler(transport_catalogue::TransportCatalogue &c,
+RequestHandler::RequestHandler(const transport_catalogue::TransportCatalogue &c,
                                const renderer::MapRenderer &m)
         : cat_(c)
         , map_(m)
@@ -104,6 +104,6 @@ json::Node RequestHandler::SolveQueries(const json::Array &data) {
     return ans.Build();
 }
 
-std::optional<RouteStats> RequestHandler::GetRoute(std::string_view from, std::string_view to) {
+std::optional<RouteStats> RequestHandler::GetRoute(std::string_view from, std::string_view to) const {
     return cat_.GetRoute(from, to);
 }
