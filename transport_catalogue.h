@@ -14,7 +14,7 @@
 #include "geo.h"
 #include "graph.h"
 #include "domain.h"
-#include "router.h"
+#include "transport_router.h"
 
 namespace transport_catalogue {
 
@@ -58,7 +58,7 @@ private:
     std::unordered_map<const Bus*, std::unordered_set<const Stop*>, BusHasher> unique_stops_for_bus_;
     std::unordered_map<std::pair<const Stop*, const Stop*>, int, StopPairHasher> dist_between_stops_;
     graph::DirectedWeightedGraph<double> graph_;
-    std::optional<graph::Router<double>> router_;
+    TransportRouter router_;
     std::unordered_map<std::string_view, graph::EdgeId> edge_to_name_;
     std::unordered_map<graph::EdgeId, EdgeInfo> info_to_edge_;
 };

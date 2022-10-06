@@ -22,6 +22,8 @@ namespace graph {
     public:
         explicit Router(const Graph& graph);
 
+        Router();
+
         struct RouteInfo {
             Weight weight;
             std::vector<EdgeId> edges;
@@ -29,7 +31,7 @@ namespace graph {
 
         std::optional<RouteInfo> BuildRoute(VertexId from, VertexId to) const;
 
-    private:
+    protected:
         struct RouteInternalData {
             Weight weight;
             std::optional<EdgeId> prev_edge;
@@ -76,7 +78,7 @@ namespace graph {
         }
 
         static constexpr Weight ZERO_WEIGHT{};
-        const Graph& graph_;
+        const Graph* graph_;
         RoutesInternalData routes_internal_data_;
     };
 
@@ -105,7 +107,7 @@ namespace graph {
         std::vector<EdgeId> edges;
         for (std::optional<EdgeId> edge_id = route_internal_data->prev_edge;
              edge_id;
-             edge_id = routes_internal_data_[from][graph_.GetEdge(*edge_id).from]->prev_edge)
+             edge_id = routes_internal_data_[from][graph_->GetEdge(*edge_id).from]->prev_edge)
         {
             edges.push_back(*edge_id);
         }
@@ -113,5 +115,4 @@ namespace graph {
 
         return RouteInfo{weight, std::move(edges)};
     }
-
 }  // namespace graph
