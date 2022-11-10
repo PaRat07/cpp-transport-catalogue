@@ -46,6 +46,8 @@ public:
 
     void InitializeRouter();
 
+    const std::deque<Bus> &GetBuses() const;;
+
 private:
     const Bus* SearchBusByName(std::string_view name) const;
     const Stop* SearchStopByName(std::string_view name) const;

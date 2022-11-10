@@ -17,6 +17,7 @@ struct Stop {
     Stop(std::string_view n, double lat, double lng);
     Stop(Stop&& stop);
     Stop(const Stop&) = default;
+    ~Stop() = default;
     std::string name;
     geo::Coordinates coordinates;
     bool operator==(const Stop &other) const;

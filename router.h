@@ -22,7 +22,7 @@ namespace graph {
     public:
         explicit Router(const Graph& graph);
 
-        Router();
+        Router() = default;
 
         struct RouteInfo {
             Weight weight;

@@ -116,4 +116,8 @@ namespace transport_catalogue {
         router_.Initialize(graph_);
     }
 
+    const std::deque<Bus> &TransportCatalogue::GetBuses() const {
+        return buses_;
+    }
+
 }
