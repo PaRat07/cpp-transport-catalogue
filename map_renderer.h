@@ -62,10 +62,10 @@ private:
 // Класс для преобразования каталога в SVG
 class MapRenderer {
 public:
-    MapRenderer(MapSettings s);
     void AddBus(const Bus &bus);
 
     void Render(std::ostream &out) const;
+    void SetMapSettings(MapSettings s);
 private:
     MapSettings settings_;
     double max_long = -180., min_long = 180., max_lat = -90., min_lat = 90.;

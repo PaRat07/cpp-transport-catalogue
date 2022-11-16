@@ -13,11 +13,48 @@ message Stop {
 
 message Bus {
   string name = 1;
-  repeated Stop stops = 2;
+  repeated string stop = 2;
   int32 dist = 3;
   bool is_roundtrip = 4;
 }
 
+message PairOfStrings {
+  string first = 1;
+  string second = 2;
+}
+
+message PairFromPairsOfStringsAndInt {
+  PairOfStrings stops = 1;
+  int32 dist = 2;
+}
+
 message Catalogue {
-  repeated Bus buses = 1;
+  repeated Stop stop = 1;
+  repeated Bus bus = 2;
+  repeated PairFromPairsOfStringsAndInt dists = 3;
+}
+
+message Point {
+  double x = 1;
+  double y = 2;
+}
+
+message MapSettings {
+  double width = 1;
+  double height = 2;
+  double padding = 3;
+  double line_width = 4;
+  double stop_radius = 5;
+  int32 bus_label_font_size = 6;
+  Point bus_label_offset = 7;
+  int32 stop_label_font_size = 8;
+  Point stop_label_offset = 9;
+  string underlayer_color = 10;
+  double underlayer_width = 11;
+  repeated string color_palette = 12;
+}
+
+message TransportCatalogue {
+  Catalogue cat = 1;
+  MapSettings map_settings = 2;
 }

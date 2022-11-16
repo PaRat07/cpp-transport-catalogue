@@ -46,7 +46,11 @@ public:
 
     void InitializeRouter();
 
-    const std::deque<Bus> &GetBuses() const;;
+    const std::deque<Bus> &GetBuses() const;
+
+    const std::deque<Stop> &GetStops() const;
+
+    const std::unordered_map<std::pair<const Stop*, const Stop*>, int, StopPairHasher> &GetAllDists() const;
 
 private:
     const Bus* SearchBusByName(std::string_view name) const;

@@ -120,4 +120,11 @@ namespace transport_catalogue {
         return buses_;
     }
 
+    const std::unordered_map<std::pair<const Stop *, const Stop *>, int, StopPairHasher> &TransportCatalogue::GetAllDists() const {
+        return dist_between_stops_;
+    }
+
+    const std::deque<Stop> &TransportCatalogue::GetStops() const {
+        return stops_;
+    }
 }

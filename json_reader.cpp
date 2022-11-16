@@ -11,7 +11,7 @@ BusDataForAdd::BusDataForAdd(std::string n, std::vector<std::string> s, bool i_r
 
 }
 
-void JsonReader::AddData(const json::Array &data) {
+void JsonReader::AddData(const json::Array &data, const MapSettings &settings, const filesystem::path &path) {
     std::vector<BusDataForAdd> buses_queries;
     vector<pair<pair<string, string>, int>> stop_dists;
     for (const auto &i : data) {
@@ -33,9 +33,11 @@ void JsonReader::AddData(const json::Array &data) {
         cat_.SetDistBetweenStops(buses.first, buses.second, dist);
     }
     for (const auto &i : buses_queries) {
-        map_.AddBus(*cat_.AddBus(i.name, i.stops, i.is_roundtrip));
+        cat_.AddBus(i.name, i.stops, i.is_roundtrip);
+//        map_.AddBus(*cat_.AddBus(i.name, i.stops, i.is_roundtrip));
     }
-    cat_.InitializeRouter();
+
+    Serialize(cat_, settings, path);
 }
 
 JsonReader::JsonReader(transport_catalogue::TransportCatalogue &c, renderer::MapRenderer &m)

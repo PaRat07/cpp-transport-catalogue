@@ -80,6 +80,7 @@ struct StopsStat {
 
 // Хранит настройки карты
 struct MapSettings {
+    MapSettings() = default;
     MapSettings(const json::Dict &data);
     double width;
     double height;

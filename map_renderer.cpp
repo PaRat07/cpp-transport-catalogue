@@ -1,4 +1,5 @@
 #include <iostream>
+#include <utility>
 #include "map_renderer.h"
 
 using namespace std;
@@ -28,20 +29,15 @@ void renderer::MapRenderer::AddBus(const Bus &bus) {
     });
 }
 
-renderer::MapRenderer::MapRenderer(MapSettings s)
-        : settings_(s)
-{
-}
-
 void renderer::MapRenderer::Render(std::ostream &out) const {
     svg::Document doc_;
     SphereProjector proj(max_lat, min_lat, max_long, min_long, settings_.width, settings_.height, settings_.padding);
     std::vector<const Stop*> stops;
     for (size_t i = 0; i < buses_.size(); ++i) {
         auto bus = std::make_unique<svg::Polyline>(svg::Polyline().SetStrokeColor(settings_.color_palette[i % settings_.color_palette.size()])
-                                                                  .SetFillColor(svg::NoneColor).SetStrokeWidth(settings_.line_width)
-                                                                  .SetStrokeLineCap(svg::StrokeLineCap::ROUND)
-                                                                  .SetStrokeLineJoin(svg::StrokeLineJoin::ROUND));
+                                                                                   .SetFillColor(svg::NoneColor).SetStrokeWidth(settings_.line_width)
+                                                                                   .SetStrokeLineCap(svg::StrokeLineCap::ROUND)
+                                                                                   .SetStrokeLineJoin(svg::StrokeLineJoin::ROUND));
         for (const Stop* s : buses_[i].stops) {
             stops.push_back(s);
             bus->AddPoint(proj(s->coordinates));
@@ -59,79 +55,83 @@ void renderer::MapRenderer::Render(std::ostream &out) const {
     stops.erase(std::unique(stops.begin(), stops.end()), stops.end());
     for (size_t i = 0; i < buses_.size(); ++i) {
         doc_.Add(svg::Text().SetData(buses_[i].name)
-                            .SetPosition(proj(buses_[i].stops.front()->coordinates))
-                            .SetFontFamily("Verdana")
-                            .SetFontWeight("bold")
-                            .SetOffset(settings_.bus_label_offset)
-                            .SetFontSize(settings_.bus_label_font_size)
-                            .SetFillColor(settings_.underlayer_color)
-                            .SetStrokeColor(settings_.underlayer_color)
-                            .SetStrokeWidth(settings_.underlayer_width)
-                            .SetStrokeLineJoin(svg::StrokeLineJoin::ROUND)
-                            .SetStrokeLineCap(svg::StrokeLineCap::ROUND));
+                                .SetPosition(proj(buses_[i].stops.front()->coordinates))
+                                .SetFontFamily("Verdana")
+                                .SetFontWeight("bold")
+                                .SetOffset(settings_.bus_label_offset)
+                                .SetFontSize(settings_.bus_label_font_size)
+                                .SetFillColor(settings_.underlayer_color)
+                                .SetStrokeColor(settings_.underlayer_color)
+                                .SetStrokeWidth(settings_.underlayer_width)
+                                .SetStrokeLineJoin(svg::StrokeLineJoin::ROUND)
+                                .SetStrokeLineCap(svg::StrokeLineCap::ROUND));
 
         doc_.Add(svg::Text().SetData(buses_[i].name)
-                            .SetPosition(proj(buses_[i].stops.front()->coordinates))
-                            .SetFontFamily("Verdana")
-                            .SetFontWeight("bold")
-                            .SetOffset(settings_.bus_label_offset)
-                            .SetFontSize(settings_.bus_label_font_size)
-                            .SetFillColor(settings_.color_palette[i % settings_.color_palette.size()]));
+                                .SetPosition(proj(buses_[i].stops.front()->coordinates))
+                                .SetFontFamily("Verdana")
+                                .SetFontWeight("bold")
+                                .SetOffset(settings_.bus_label_offset)
+                                .SetFontSize(settings_.bus_label_font_size)
+                                .SetFillColor(settings_.color_palette[i % settings_.color_palette.size()]));
 
         if (!buses_[i].is_roundtrip && buses_[i].stops.front() != buses_[i].stops.back()) {
             doc_.Add(svg::Text().SetData(buses_[i].name)
-                             .SetPosition(proj(buses_[i].stops.back()->coordinates))
-                             .SetFontFamily("Verdana")
-                             .SetFontWeight("bold")
-                             .SetOffset(settings_.bus_label_offset)
-                             .SetFontSize(settings_.bus_label_font_size)
-                             .SetFillColor(settings_.underlayer_color)
-                             .SetStrokeColor(settings_.underlayer_color)
-                             .SetStrokeWidth(settings_.underlayer_width)
-                             .SetStrokeLineJoin(svg::StrokeLineJoin::ROUND)
-                             .SetStrokeLineCap(svg::StrokeLineCap::ROUND));
+                                    .SetPosition(proj(buses_[i].stops.back()->coordinates))
+                                    .SetFontFamily("Verdana")
+                                    .SetFontWeight("bold")
+                                    .SetOffset(settings_.bus_label_offset)
+                                    .SetFontSize(settings_.bus_label_font_size)
+                                    .SetFillColor(settings_.underlayer_color)
+                                    .SetStrokeColor(settings_.underlayer_color)
+                                    .SetStrokeWidth(settings_.underlayer_width)
+                                    .SetStrokeLineJoin(svg::StrokeLineJoin::ROUND)
+                                    .SetStrokeLineCap(svg::StrokeLineCap::ROUND));
 
             doc_.Add(svg::Text().SetData(buses_[i].name)
-                             .SetPosition(proj(buses_[i].stops.back()->coordinates))
-                             .SetFontFamily("Verdana")
-                             .SetFontWeight("bold")
-                             .SetOffset(settings_.bus_label_offset)
-                             .SetFontSize(settings_.bus_label_font_size)
-                             .SetFillColor(settings_.color_palette[i % settings_.color_palette.size()]));
+                                     .SetPosition(proj(buses_[i].stops.back()->coordinates))
+                                     .SetFontFamily("Verdana")
+                                     .SetFontWeight("bold")
+                                     .SetOffset(settings_.bus_label_offset)
+                                     .SetFontSize(settings_.bus_label_font_size)
+                                     .SetFillColor(settings_.color_palette[i % settings_.color_palette.size()]));
         }
     }
     for (const Stop* s : stops) {
         doc_.Add(svg::Circle().SetCenter(proj(s->coordinates))
-                         .SetRadius(settings_.stop_radius)
-                         .SetFillColor("white"));
+                                  .SetRadius(settings_.stop_radius)
+                                  .SetFillColor("white"));
     }
     for (const Stop* s : stops) {
         doc_.Add(svg::Text().SetData(s->name)
-                            .SetPosition(proj(s->coordinates))
-                            .SetOffset(settings_.stop_label_offset)
-                            .SetFontSize(settings_.stop_label_font_size)
-                            .SetFontFamily("Verdana")
-                            .SetFillColor(settings_.underlayer_color)
-                            .SetStrokeColor(settings_.underlayer_color)
-                            .SetStrokeWidth(settings_.underlayer_width)
-                            .SetStrokeLineCap(svg::StrokeLineCap::ROUND)
-                            .SetStrokeLineJoin(svg::StrokeLineJoin::ROUND));
+                                .SetPosition(proj(s->coordinates))
+                                .SetOffset(settings_.stop_label_offset)
+                                .SetFontSize(settings_.stop_label_font_size)
+                                .SetFontFamily("Verdana")
+                                .SetFillColor(settings_.underlayer_color)
+                                .SetStrokeColor(settings_.underlayer_color)
+                                .SetStrokeWidth(settings_.underlayer_width)
+                                .SetStrokeLineCap(svg::StrokeLineCap::ROUND)
+                                .SetStrokeLineJoin(svg::StrokeLineJoin::ROUND));
 
         doc_.Add(svg::Text().SetData(s->name)
-                         .SetPosition(proj(s->coordinates))
-                         .SetOffset(settings_.stop_label_offset)
-                         .SetFontSize(settings_.stop_label_font_size)
-                         .SetFontFamily("Verdana")
-                         .SetFillColor("black"));
+                                .SetPosition(proj(s->coordinates))
+                                .SetOffset(settings_.stop_label_offset)
+                                .SetFontSize(settings_.stop_label_font_size)
+                                .SetFontFamily("Verdana")
+                                .SetFillColor("black"));
     }
     doc_.Render(out);
+}
+
+void renderer::MapRenderer::SetMapSettings(MapSettings s) {
+    settings_ = s;
 }
 
 svg::Point renderer::SphereProjector::operator()(geo::Coordinates coords) const {
     return {
             (coords.lng - min_lon_) * zoom_coeff_ + padding_,
             (max_lat_ - coords.lat) * zoom_coeff_ + padding_
-    };
+           };
 }
 
 bool renderer::IsZero(double value) {
