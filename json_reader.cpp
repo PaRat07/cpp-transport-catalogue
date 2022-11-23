@@ -37,6 +37,7 @@ void JsonReader::AddData(const json::Array &data, const MapSettings &settings, c
 //        map_.AddBus(*cat_.AddBus(i.name, i.stops, i.is_roundtrip));
     }
 
+    cat_.InitializeRouter();
     Serialize(cat_, settings, path);
 }
 

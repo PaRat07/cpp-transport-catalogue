@@ -21,12 +21,13 @@ int main() {
 
     if (mode == "make_base"sv) {
         auto query = json::Load(cin);
-        transport_catalogue::TransportCatalogue cat(RoutingSettings{});
-        MapSettings settings(query.GetRoot().AsDict().at("render_settings").AsDict());
+        RoutingSettings routing_settings(query.GetRoot().AsDict().at("routing_settings").AsDict());
+        transport_catalogue::TransportCatalogue cat(routing_settings);
+        MapSettings map_settings(query.GetRoot().AsDict().at("render_settings").AsDict());
         renderer::MapRenderer map;
-        map.SetMapSettings(settings);
+        map.SetMapSettings(map_settings);
         JsonReader reader(cat, map);
-        reader.AddData(query.GetRoot().AsDict().at("base_requests").AsArray(), settings, {query.GetRoot().AsDict().at("serialization_settings").AsDict().at("file").AsString()});
+        reader.AddData(query.GetRoot().AsDict().at("base_requests").AsArray(), map_settings, {query.GetRoot().AsDict().at("serialization_settings").AsDict().at("file").AsString()});
     } else if (mode == "process_requests"sv) {
         json::Document query = json::Load(cin);
         transport_catalogue::TransportCatalogue cat(RoutingSettings{});

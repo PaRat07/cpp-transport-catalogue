@@ -127,4 +127,32 @@ namespace transport_catalogue {
     const std::deque<Stop> &TransportCatalogue::GetStops() const {
         return stops_;
     }
+
+    const TransportRouter &TransportCatalogue::GetRouter() const {
+        return router_;
+    }
+
+    void TransportCatalogue::SetRouter(TransportRouter router) {
+        router_ = std::move(router);
+    }
+
+    void TransportCatalogue::SetGraph(graph::DirectedWeightedGraph<double> graph) {
+        graph_ = std::move(graph);
+    }
+
+    TransportRouter &TransportCatalogue::GetRouter() {
+        return router_;
+    }
+
+    void TransportCatalogue::SetRoutingSettings(RoutingSettings settings) {
+        settings_ = settings;
+    }
+
+    const graph::DirectedWeightedGraph<double> *TransportCatalogue::GetGraphPtr() const {
+        return &graph_;
+    }
+
+    const RoutingSettings &TransportCatalogue::GetRoutingSettings() const {
+        return settings_;
+    }
 }

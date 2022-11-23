@@ -52,6 +52,19 @@ public:
 
     const std::unordered_map<std::pair<const Stop*, const Stop*>, int, StopPairHasher> &GetAllDists() const;
 
+    const TransportRouter& GetRouter() const;
+
+    TransportRouter& GetRouter();
+
+    void SetRouter(TransportRouter router);
+
+    void SetGraph(graph::DirectedWeightedGraph<double> graph);
+
+    void SetRoutingSettings(RoutingSettings settings);
+
+    const RoutingSettings& GetRoutingSettings() const;
+
+    const graph::DirectedWeightedGraph<double>* GetGraphPtr() const;
 private:
     const Bus* SearchBusByName(std::string_view name) const;
     const Stop* SearchStopByName(std::string_view name) const;
