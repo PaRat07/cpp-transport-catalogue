@@ -61,11 +61,17 @@ transport_catalogue_serialize::MapSettings SerializeMapSettings(const MapSetting
     return to_serialize;
 }
 
+transport_catalogue_serialize::OptionalInt SerializeOptionalInt(const std::optional<int> &to_serialize) {
+    transport_catalogue_serialize::OptionalInt opt_int;
+    opt_int.set_value(*to_serialize);
+    return opt_int;
+}
+
 transport_catalogue_serialize::RouteInternalData SerializeRouteInternalData(const graph::Router<double>::RouteInternalData &to_serialize) {
     transport_catalogue_serialize::RouteInternalData route_internal_data;
     route_internal_data.set_weight(to_serialize.weight);
     if (to_serialize.prev_edge) {
-        route_internal_data.set_prev_edge(*to_serialize.prev_edge);
+        *route_internal_data.mutable_prev_edge() = SerializeOptionalInt(to_serialize.prev_edge);
     }
 
     return route_internal_data;
@@ -73,18 +79,15 @@ transport_catalogue_serialize::RouteInternalData SerializeRouteInternalData(cons
 
 transport_catalogue_serialize::OptionalRouteInternalData SerializeOptionalRouteInternalData(const std::optional<graph::Router<double>::RouteInternalData>& to_serialize) {
     transport_catalogue_serialize::OptionalRouteInternalData optional_route_internal_data;
-    if (to_serialize.has_value()) {
+    if (to_serialize) {
         *optional_route_internal_data.mutable_data() = SerializeRouteInternalData(*to_serialize);
-    }
-    else {
-        optional_route_internal_data.set_null("");
     }
 
     return optional_route_internal_data;
 }
 
-transport_catalogue_serialize::RepeatedOptionalRouteInternalData SerializeRepeatedOptionalRouteInternalData(const std::vector<std::optional<graph::Router<double>::RouteInternalData>> &to_serialize) {
-    transport_catalogue_serialize::RepeatedOptionalRouteInternalData ans;
+transport_catalogue_serialize::RepeatedRouteInternalData SerializeRepeatedOptionalRouteInternalData(const std::vector<std::optional<graph::Router<double>::RouteInternalData>> &to_serialize) {
+    transport_catalogue_serialize::RepeatedRouteInternalData ans;
     for (const auto &i : to_serialize) {
         *ans.add_data() = SerializeOptionalRouteInternalData(i);
     }
@@ -206,45 +209,43 @@ graph::DirectedWeightedGraph<double>::IncidenceList DeserializeIncidenceList(con
     return to_deserialize;
 }
 
-graph::DirectedWeightedGraph<double> DeserializeGraph(const transport_catalogue_serialize::Graph &graph) {
-    graph::DirectedWeightedGraph<double> to_deserialize;
+graph::DirectedWeightedGraph<double> DeserializeGraph(const transport_catalogue_serialize::Graph &to_deserialize) {
+    graph::DirectedWeightedGraph<double> graph;
 
     std::vector<graph::Edge<double>> edges;
-    for (const auto &i : graph.edge()) {
+    for (const auto &i : to_deserialize.edge()) {
         edges.push_back(DeseralizeEdge(i));
     }
-    to_deserialize.SetEdges(edges);
+    graph.SetEdges(std::move(edges));
 
     std::vector<graph::DirectedWeightedGraph<double>::IncidenceList> incidence_lists;
-    for (const auto &i : graph.incidence_list()) {
+    for (const auto &i : to_deserialize.incidence_list()) {
         incidence_lists.push_back(DeserializeIncidenceList(i));
     }
-    to_deserialize.SetIncidenceLists(incidence_lists);
+    graph.SetIncidenceLists(std::move(incidence_lists));
 
-    return to_deserialize;
-}
-
-std::vector<transport_catalogue_serialize::OptionalRouteInternalData> DeserializeRepeatedOptionalRouteInternalData(const transport_catalogue_serialize::RepeatedOptionalRouteInternalData &to_deserialize) {
-    return { to_deserialize.data().begin(), to_deserialize.data().end() };
+    return graph;
 }
 
 graph::Router<double>::RouteInternalData DeserializeRouteInternalData(const transport_catalogue_serialize::RouteInternalData &to_deserialize) {
-    return { to_deserialize.weight(), (to_deserialize.has_prev_edge() ? optional<int>{to_deserialize.prev_edge()} : nullopt)};
+    return { to_deserialize.weight(), (to_deserialize.has_prev_edge() ? optional<int>{to_deserialize.prev_edge().value()} : nullopt)};
 }
 
-std::optional<graph::Router<double>::RouteInternalData> DeserializeOptionalRouteInternalData(const transport_catalogue_serialize::OptionalRouteInternalData &to_deserialize) {
-    return (to_deserialize.has_data() ? std::optional<graph::Router<double>::RouteInternalData>{DeserializeRouteInternalData(to_deserialize.data())} : nullopt);
+std::vector<std::optional<graph::Router<double>::RouteInternalData>> DeserializeRepeatedOptionalRouteInternalData(const transport_catalogue_serialize::RepeatedRouteInternalData &to_deserialize) {
+    std::vector<std::optional<graph::Router<double>::RouteInternalData>> repeated_route_internal_data;
+
+    for (const auto &i : to_deserialize.data()) {
+        repeated_route_internal_data.emplace_back(i.has_data() ? std::optional<graph::Router<double>::RouteInternalData>{DeserializeRouteInternalData(i.data())}: nullopt);
+    }
+
+    return repeated_route_internal_data;
 }
 
 graph::Router<double> DeserializeRouter(const transport_catalogue_serialize::Router &router) {
     graph::Router<double> to_deserialize;
     graph::Router<double>::RoutesInternalData data;
     for (const auto &i : router.routes_internal_data()) {
-        std::vector<std::optional<graph::Router<double>::RouteInternalData>> new_elem;
-        for (const auto &s : DeserializeRepeatedOptionalRouteInternalData(i)) {
-            new_elem.push_back(DeserializeOptionalRouteInternalData(s));
-        }
-        data.push_back(new_elem);
+        data.push_back(DeserializeRepeatedOptionalRouteInternalData(i));
     }
     to_deserialize.SetRoutesInternalData(data);
 

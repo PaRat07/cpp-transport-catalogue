@@ -1,0 +1,7 @@
+syntax = "proto3";
+package transport_catalogue_serialize;
+
+message Point {
+  double x = 1;
+  double y = 2;
+}

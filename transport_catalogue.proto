@@ -1,4 +1,8 @@
 syntax = "proto3";
+
+import "map_renderer.proto";
+import "graph.proto";
+import "transport_router.proto";
 package transport_catalogue_serialize;
 
 message Coordinates {
@@ -32,69 +36,6 @@ message Catalogue {
   repeated Stop stop = 1;
   repeated Bus bus = 2;
   repeated PairFromPairsOfStringsAndInt dists = 3;
-}
-
-message Point {
-  double x = 1;
-  double y = 2;
-}
-
-message MapSettings {
-  double width = 1;
-  double height = 2;
-  double padding = 3;
-  double line_width = 4;
-  double stop_radius = 5;
-  int32 bus_label_font_size = 6;
-  Point bus_label_offset = 7;
-  int32 stop_label_font_size = 8;
-  Point stop_label_offset = 9;
-  string underlayer_color = 10;
-  double underlayer_width = 11;
-  repeated string color_palette = 12;
-}
-
-message RouterSettings {
-  int32 bus_wait_time = 1;
-  double bus_velocity = 2;
-}
-
-message Edge {
-  uint32 from = 1;
-  uint32 to = 2;
-  double weight = 3;
-}
-
-message IncidenceList {
-  repeated int32 list = 1;
-}
-
-message Graph {
-  repeated Edge edge = 1;
-  repeated IncidenceList incidence_list = 2;
-}
-
-message RouteInternalData {
-  double weight = 1;
-  oneof optional_int {
-    uint32 prev_edge = 2;
-    string null = 3;
-  }
-}
-
-message OptionalRouteInternalData {
-  oneof optional_route_internal_data{
-    RouteInternalData data = 1;
-    string null = 2;
-  }
-}
-
-message RepeatedOptionalRouteInternalData {
-  repeated OptionalRouteInternalData data = 1;
-}
-
-message Router {
-  repeated RepeatedOptionalRouteInternalData routes_internal_data = 1;
 }
 
 message TransportCatalogue {

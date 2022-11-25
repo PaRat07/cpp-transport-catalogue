@@ -28,11 +28,13 @@ int main() {
         map.SetMapSettings(map_settings);
         JsonReader reader(cat, map);
         reader.AddData(query.GetRoot().AsDict().at("base_requests").AsArray(), map_settings, {query.GetRoot().AsDict().at("serialization_settings").AsDict().at("file").AsString()});
+        cat.GetRoute("Морской вокзал"sv, "Параллельная улица"sv);
     } else if (mode == "process_requests"sv) {
         json::Document query = json::Load(cin);
         transport_catalogue::TransportCatalogue cat(RoutingSettings{});
         renderer::MapRenderer map;
         Deserialize(query.GetRoot().AsDict().at("serialization_settings").AsDict().at("file").AsString(), cat, map);
+        cat.GetRoute("Морской вокзал"sv, "Параллельная улица"sv);
         RequestHandler handler{cat, map};
         json::Print(json::Document(handler.SolveQueries(query.GetRoot().AsDict().at("stat_requests").AsArray())), cout);
     } else {

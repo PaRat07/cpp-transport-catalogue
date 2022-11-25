@@ -73,7 +73,7 @@ json::Node RequestHandler::SolveQueries(const json::Array &data) {
                 json::Array buses(route_stat->route.size());
                 std::transform(route_stat->route.begin(), route_stat->route.end(), buses.begin(), [](const EdgeInfo &inf) {
                     if (inf.type == EdgeType::BUS) {
-                        return json::Builder().StartDict()
+                        return json::Builder() .StartDict()
                                                     .Key("type").Value("Bus")
                                                     .Key("bus").Value(inf.name)
                                                     .Key("span_count").Value(inf.span_count)
@@ -82,21 +82,23 @@ json::Node RequestHandler::SolveQueries(const json::Array &data) {
                     }
                     else {
                         return json::Builder().StartDict()
-                                .Key("type").Value("Wait")
-                                .Key("stop_name").Value(inf.name)
-                                .Key("time").Value(inf.time)
-                                .EndDict().Build();
+                                                  .Key("type").Value("Wait")
+                                                  .Key("stop_name").Value(inf.name)
+                                                  .Key("time").Value(inf.time)
+                                              .EndDict().Build();
                     }
                 });
-                ans.StartDict() .Key("items").Value(buses)
+                ans .StartDict()
+                        .Key("items").Value(buses)
                         .Key("request_id").Value(i.AsDict().at("id"))
                         .Key("total_time").Value(route_stat->length)
-                        .EndDict();
+                    .EndDict();
             }
             else {
-                ans.StartDict() .Key("error_message").Value(json::Node("not found"s))
+                ans .StartDict()
+                        .Key("error_message").Value(json::Node("not found"s))
                         .Key("request_id").Value(i.AsDict().at("id"))
-                        .EndDict();
+                    .EndDict();
             }
         }
     }
